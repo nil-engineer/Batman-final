@@ -2,6 +2,7 @@ package com.test.batman
 
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -11,6 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.test.batman.Utilities.CheckNetwork
 import com.test.batman.ViewModel.DetailViewModel
 import com.test.batman.ViewModel.DetailViewModelFactory
+import com.test.batman.model.VideoDetailModel
 import kotlinx.android.synthetic.main.activity_detail.*
 
 import javax.inject.Inject
@@ -23,7 +25,6 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var id: String
     private lateinit var checkNetwork: CheckNetwork
 
-    //    private lateinit var videoDetail: MutableLiveData<>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        databinding = DataBindingUtil.setContentView(this, R.layout.activity_detail)
@@ -35,61 +36,67 @@ class DetailActivity : AppCompatActivity() {
         checkNetwork = CheckNetwork()
 
         val b = intent.extras
-        id = b!!.getString("VIDEO_ID")!!
-        viewModel = ViewModelProvider(this, factory).get(DetailViewModel::class.java)
-        if(checkNetwork.isOnline(this)) {
-            viewModel.getDetailPage(this, id, application).observe(this, Observer {
+            id = b!!.getString("VIDEO_ID")!!
+            viewModel = ViewModelProvider(this, factory).get(DetailViewModel::class.java)
+            if(checkNetwork.isOnline(this)) {
+                viewModel.getDetailPage(this, id, application).observe(this, Observer {
 //                detail_toolbar.title = it.Title
-                type.text = it.Type
-                year.text = it.Year
-                detail_title.text = it.Title
-                release_date.text = it.Released
-                runtime.text = it.Runtime
-                genre.text = it.Genre
-                language.text = it.Language
-                country.text = it.Country
-                director.text = it.Director
-                actors.text = it.Actors
-                writer.text = it.Writer
-                awards.text = it.Awards
-                plot.text = it.Plot
-                imdb_rating.text = it.imdbRating
-                imdb_votes.text = it.imdbVotes
-                production.text = it.Production
-                Glide.with(this)
-                    .load(it.Poster)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(detail_poster)
-            })
-        }
-        else{
-            viewModel.getDetailPageOffline(application, id)?.observe(this, Observer {
-                type.text = it.Type
-                year.text = it.Year
-                detail_title.text = it.Title
-                release_date.text = it.Released
-                runtime.text = it.Runtime
-                genre.text = it.Genre
-                language.text = it.Language
-                country.text = it.Country
-                director.text = it.Director
-                actors.text = it.Actors
-                writer.text = it.Writer
-                awards.text = it.Awards
-                plot.text = it.Plot
-                imdb_rating.text = it.imdbRating
-                imdb_votes.text = it.imdbVotes
-                production.text = it.Production
-                Glide.with(this)
-                    .load(it.Poster)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(detail_poster)
-            })
-        }
+                    if(it != null) {
+                        showData(it)
+                    }
+                    else{
+                        AlertDialog.Builder(this)
+                            .setMessage("Video Detail Doesn't exist")
+                            .setPositiveButton("OK"){dialog, which ->
+                                finish()
+                            }
+                            .show()
+                    }
+                })
+            }
+            else{
+                viewModel.getDetailPageOffline(application, id)?.observe(this, Observer {
+                    if(it != null) {
+                        showData(it)
 
+                    }
+                    else{
+                        AlertDialog.Builder(this)
+                            .setMessage("Video Detail Doesn't exist")
+                            .setPositiveButton("OK"){dialog, which ->
+                                finish()
+                            }
+                            .show()
+                    }
+                })
+            }
 
 //        detail_pb.visibility = View.VISIBLE
         detail_pb.visibility = View.GONE
 
+    }
+
+    private fun showData(videoDetailModel: VideoDetailModel){
+
+        type.text = videoDetailModel.Type
+        year.text = videoDetailModel.Year
+        detail_title.text = videoDetailModel.Title
+        release_date.text = videoDetailModel.Released
+        runtime.text = videoDetailModel.Runtime
+        genre.text = videoDetailModel.Genre
+        language.text = videoDetailModel.Language
+        country.text = videoDetailModel.Country
+        director.text = videoDetailModel.Director
+        actors.text = videoDetailModel.Actors
+        writer.text = videoDetailModel.Writer
+        awards.text = videoDetailModel.Awards
+        plot.text = videoDetailModel.Plot
+        imdb_rating.text = videoDetailModel.imdbRating
+        imdb_votes.text = videoDetailModel.imdbVotes
+        production.text = videoDetailModel.Production
+        Glide.with(this)
+            .load(videoDetailModel.Poster)
+            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+            .into(detail_poster)
     }
 }
